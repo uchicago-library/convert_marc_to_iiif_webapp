@@ -11,14 +11,16 @@ in OLE and get back the up-to-date full records matching their query.
 
 After installation, you can run the CLI application by typing
 
-.. code-block: bash
-    find_records -h
-    usage: find_records [-h] [--version] {show_lookups,searching} ...
-    positional arguments:
-        {show_lookups,searching}    how to retrieve valid lookup labels
-    optional arguments:
-        -h, --help            show this help message and exit
-        --version             show program's version number and exit
+find_records -h
+
+usage: find_records [-h] [--version] {show_lookups,searching} ...
+
+positional arguments:
+    {show_lookups,searching}    how to retrieve valid lookup labels
+
+optional arguments:
+    -h, --help            show this help message and exit
+    --version             show program's version number and exit
 
 .. toctree::
    :maxdepth: 2

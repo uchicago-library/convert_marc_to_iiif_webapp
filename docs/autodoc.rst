@@ -1,7 +1,6 @@
-Auto Docs
-=========
+Console Scripts
+===============
 
-.. automodule:: convert_marc_to_iiif_webapp
+.. automodule:: OLEMarcMigration.search.main
    :members:
-   :inherited-members:
-   :special-members: __init__
+

@@ -49,7 +49,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'convert_marc_to_iiif_webapp'
+project = 'findMarcRecordsInOLE'
 copyright = '2018, Tyler Danstrom'
 author = 'Tyler Danstrom'
 
@@ -118,7 +118,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'convert_marc_to_iiif_webappdoc'
+htmlhelp_basename = 'findMarcRecordsInOLE'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -145,7 +145,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'convert_marc_to_iiif_webapp.tex', 'convert_marc_to_iiif_webapp Documentation',
+    (master_doc, 'findMarcRecordsInOLE.tex', 'findMarcRecordsInOLE Documentation',
      'Tyler Danstrom', 'manual'),
 ]
 
@@ -155,7 +155,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'convert_marc_to_iiif_webapp', 'convert_marc_to_iiif_webapp Documentation',
+    (master_doc, 'findMarcRecordsInOLE', 'findMarcRecordsInOLE Documentation',
      [author], 1)
 ]
 
@@ -166,8 +166,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'convert_marc_to_iiif_webapp', 'convert_marc_to_iiif_webapp Documentation',
-     author, 'cookiecutterproject_name', 'One line description of project.',
+    (master_doc, 'findMarcRecordsInOLE', 'findMarcRecordsInOLE Documentation',
+     author, 'Tyler Danstrom', 'A web application intended to be able to a) extract a MARC record from the Solr index and b) generate IIIF record',
      'Miscellaneous'),
 ]
 

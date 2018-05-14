@@ -1,3 +1,10 @@
+"""a console-script to  allow a library dev to search for records in OLE by arbitrary MARC fields
+"""
+
+__author__ = "Tyler Danstrom"
+__email__ = "tdanstrom@uchicago.edu"
+__version__ = "0.0.1"
+
 from argparse import ArgumentParser
 from marcextraction.lookup import MarcFieldLookup
 from marcextraction.interfaces import SolrIndexSearcher

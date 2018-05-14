@@ -1,6 +1,6 @@
 Console Scripts
 ===============
 
-.. automodule:: OLEMarcMigration.search.main
+.. automodule:: OLEMarcMigration.search.__main__
    :members:
 

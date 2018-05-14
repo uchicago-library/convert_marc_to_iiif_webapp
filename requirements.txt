@@ -1,0 +1,3 @@
+
+git+git://github.com/uchicago-library/marc2iiif.git#egg=marc2iiif
+git+git://github.com/uchicago-library/extract_marc_From_vufind.git#egg=marcextraction

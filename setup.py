@@ -19,10 +19,19 @@ setup(
     ),
     include_package_data=True,
     url='https://github.com/verbalhanglider/convert_marc_to_iiif_webapp',
+    dependency_links = [
+        'https://github.com:uchicago-library/marc2iiif/tarball/master#egg=marc2iiif-0.1.0',
+        'https://github.com/uchicago-library/extract_marc_from_vufind/tarball/master#egg=marcExtraction-0.5.0'
+    ],
     install_requires=[
     ],
     tests_require=[
         'pytest'
     ],
-    test_suite='tests'
+    test_suite='tests',
+    entry_points = {
+        'console_scripts': [
+            'find_records=OLEMarcMigration.search.__main__:main'
+        ]
+    }
 )

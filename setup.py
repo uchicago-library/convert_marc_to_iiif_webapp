@@ -9,7 +9,7 @@ def readme():
 setup(
     name="convert_marc_to_iiif_webapp",
     description="A web application intended to be able to a) extract a MARC record from the Solr index and b) generate IIIF record",
-    version="0.0.1",
+    version="1.0.0",
     long_description=readme(),
     author="Tyler Danstrom",
     author_email="tdanstrom@uchicago.edu",

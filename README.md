@@ -1,4 +1,4 @@
-# find MARC records in OLE [![v0.0.1](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://github.com/uchicago-library/convert_marc_to_iiif_webapp/releases)
+# find MARC records in OLE [![v1.0.0](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/uchicago-library/convert_marc_to_iiif_webapp/releases)
 
 [![Documentation Status](https://readthedocs.org/projects/findMarcRecordsInOLE/badge/?version=latest)](http://findMArcRecordsInOLE.readthedocs.io/en/latest/?badge=latest)
 

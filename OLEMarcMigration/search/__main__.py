@@ -5,7 +5,7 @@ __author__ = "Tyler Danstrom"
 __email__ = "tdanstrom@uchicago.edu"
 __version__ = "1.0.0"
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Action, ArgumentError
 from marcextraction.lookup import MarcFieldLookup
 from marcextraction.interfaces import SolrIndexSearcher, OLERecordFinder
 from marcextraction.utils import find_ole_bib_numbers
@@ -21,6 +21,20 @@ from xml.etree import ElementTree
 
 OLE_INDEX = environ["OLE_INDEX"]
 SOLR_INDEX = environ["SOLR_INDEX"]
+
+class CombineWithProperFieldLookup(Action):
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        super(CombineWithProperFieldLookup, self).__init__(option_strings, dest, **kwargs)
+
+    def __call__(self, parser, args, values, options_string=None):
+        print(args)
+        if (args.field_lookup != None) and (self.dest == 'subfield_label_lookup'):
+            raise ArgumentError(self, "Cannot be combined with -f/--field_lookup")
+        elif args.field_label_lookup != None and (self.dest == 'subfield_lookup'):
+            raise ArgumentError(self, "Cannot be combined with -fl/--field_label_lookup")
+        else:
+            print("yup")
+            setattr(parser, self.dest, values)
 
 def show_lookups(args):
     """a function to get the valid lookup labels and printing it to the screen
@@ -65,6 +79,7 @@ def search_func(args):
         else:
             stderr.write("record {} did not have a bib number in controlfield_0001\n".format(str(count)))
         count += 1
+
 def main():
     """the main function of the console-script.
 
@@ -86,14 +101,22 @@ def main():
         search.set_defaults(which='searching')
         search.add_argument("query_term", help="A string that you want to search the OLE index stemmed for matching results", 
                             action='store', type=str)
-        search.add_argument("field_lookup", help="")
-        search.add_argument("subfield_lookup", help="")
+
+        group1 = search.add_mutually_exclusive_group(required=True)
+        group1.add_argument("-f", "--field_lookup", help="The specific MARC field that you are searching in")
+        group1.add_argument("-fl", "--field_label_lookup", help="The label for the specific MARC field that you are searching in")
+
+        search.add_argument("-sf", "--subfield_lookup", help="The MARC sub field cod for the specific subfield field that you are searching in", action=CombineWithProperFieldLookup)
+        search.add_argument("-sfl", "--subfield_label_lookup", help="The label for the specific MARC subfield that you are searching in", action=CombineWithProperFieldLookup)
+
         parser.add_argument("--version", action='version', version='%(prog)s 1.0')
         args = parser.parse_args()
+        """
         if args.which == 'show':
             show_lookups(args)
         elif args.which == 'searching':
             search_func(args)
+        """
         return 0
     except KeyboardInterrupt:
         return 131

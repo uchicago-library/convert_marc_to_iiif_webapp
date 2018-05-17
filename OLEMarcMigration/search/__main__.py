@@ -27,14 +27,14 @@ class CombineWithProperFieldLookup(Action):
         super(CombineWithProperFieldLookup, self).__init__(option_strings, dest, **kwargs)
 
     def __call__(self, parser, args, values, options_string=None):
-        print(args)
         if (args.field_lookup != None) and (self.dest == 'subfield_label_lookup'):
             raise ArgumentError(self, "Cannot be combined with -f/--field_lookup")
         elif args.field_label_lookup != None and (self.dest == 'subfield_lookup'):
             raise ArgumentError(self, "Cannot be combined with -fl/--field_label_lookup")
         else:
-            print("yup")
-            setattr(parser, self.dest, values)
+            print(self.dest)
+            print(args)
+            setattr(args, self.dest, values)
 
 def show_lookups(args):
     """a function to get the valid lookup labels and printing it to the screen
@@ -55,30 +55,48 @@ def search_func(args):
         list. A list of XML extracted from the Solr index or an empty list if no items matched the query.
     """
     searcher = SolrIndexSearcher(SOLR_INDEX, 'ole')
-    results = searcher.search(args.query_term, args.field_lookup, args.subfield_lookup)
-    count = 1
-    ole_url_object = urlparse(OLE_INDEX)
-    for n in results:
-        #stdout.write("{}\n".format(n.get("controlfield_001")))
-        cf_field = n.get("controlfield_001")[0]
-        if cf_field:
-            bib_number = cf_field[0]
-            finder = OLERecordFinder(bib_number, ole_url_object.netloc, ole_url_object.scheme, ole_url_object.path)
-            check, data = finder.get_record()
-            if check:
-                for n_thing in data:
-                    xml_doc = ElementTree.ElementTree(ElementTree.fromstring(n_thing))
-                    random_id = uuid4().hex
-                    fname = "{}.xml".format(random_id)
-                    if exists(join(getcwd(), fname)):
-                        stderr.write("could not write over existing file {}".format(fname))
-                    else:
-                        xml_doc.write(fname, xml_declaration=True, encoding="UTF-8")
-                        stdout.write("record for MARC bib number {} written to {}\n".format(cf_field, fname))
-                stdout.write("{} has MARC records in the OLE SRU\n".format(cf_field))
-        else:
-            stderr.write("record {} did not have a bib number in controlfield_0001\n".format(str(count)))
+    print(args)
+    if args.field_lookup and args.subfield_lookup:
+        print("need to search by field and subfield")
+        results = searcher.search(args.query_term, field=args.field_lookup, subfield=args.subfield_lookup)
+    elif args.field_label_lookup and args.subfield_label_lookup:
+        results = searcher.search(args.query_term, field_label=args.field_label_lookup, subfield_label=args.subfield_label_lookup)
+    elif args.field_lookup:
+        results = searcher.search(args.query_term, field=args.field_lookup)
+        print(results)
+    elif args.field_label_lookup:
+        results = searcher.search(args.query_term, field_label=args.field_lookup)
+    else:
+        results = searcher.search(args.query_term)
+    if args.extract_records:
+        count = 1
+        ole_url_object = urlparse(OLE_INDEX)
+        for n in results:
+            cf_field = n
+            if cf_field:
+                bib_number = cf_field
+                finder = OLERecordFinder(bib_number, ole_url_object.netloc, ole_url_object.scheme, ole_url_object.path)
+                check, data = finder.get_record()
+                if check:
+                    for n_thing in data:
+                        xml_doc = ElementTree.ElementTree(ElementTree.fromstring(n_thing))
+                        random_id = uuid4().hex
+                        fname = "{}.xml".format(random_id)
+                        if exists(join(getcwd(), fname)):
+                            stderr.write("could not write over existing file {}".format(fname))
+                        else:
+                            xml_doc.write(fname, xml_declaration=True, encoding="UTF-8")
+                            stdout.write("record for MARC bib number {} written to {}\n".format(cf_field, fname))
+                    stdout.write("{} has MARC records in the OLE SRU\n".format(cf_field))
+            else:
+                stderr.write("record {} did not have a bib number in controlfield_0001\n".format(str(count)))
         count += 1
+    else:
+        count = 1
+        for n_result in results:
+            stdout.write("Bib number: {}\n".format(n_result.strip()))
+            count += 1 
+        stdout.write("Total records in search: {}\n".format(count))
 
 def main():
     """the main function of the console-script.
@@ -99,24 +117,22 @@ def main():
         search = subparsers.add_parser('searching')
         show.set_defaults(which='show')
         search.set_defaults(which='searching')
+        group1 = search.add_mutually_exclusive_group()
+        group1.add_argument("-f", "--field_lookup", help="The specific MARC field that you are searching in", type=int)
+        group1.add_argument("-fl", "--field_label_lookup", help="The label for the specific MARC field that you are searching in", type=str)
+
+        search.add_argument("-sf", "--subfield_lookup", help="The MARC sub field cod for the specific subfield field that you are searching in", type=str, action=CombineWithProperFieldLookup)
+        search.add_argument("-sfl", "--subfield_label_lookup", help="The label for the specific MARC subfield that you are searching in", type=str, action=CombineWithProperFieldLookup)
         search.add_argument("query_term", help="A string that you want to search the OLE index stemmed for matching results", 
-                            action='store', type=str)
-
-        group1 = search.add_mutually_exclusive_group(required=True)
-        group1.add_argument("-f", "--field_lookup", help="The specific MARC field that you are searching in")
-        group1.add_argument("-fl", "--field_label_lookup", help="The label for the specific MARC field that you are searching in")
-
-        search.add_argument("-sf", "--subfield_lookup", help="The MARC sub field cod for the specific subfield field that you are searching in", action=CombineWithProperFieldLookup)
-        search.add_argument("-sfl", "--subfield_label_lookup", help="The label for the specific MARC subfield that you are searching in", action=CombineWithProperFieldLookup)
-
+                             action='store', type=str)
+        search.add_argument("--extract_records", action='store_true', default=False, help="Use this flag if you don't actually want to save the records to disk yet")
         parser.add_argument("--version", action='version', version='%(prog)s 1.0')
+ 
         args = parser.parse_args()
-        """
         if args.which == 'show':
             show_lookups(args)
         elif args.which == 'searching':
             search_func(args)
-        """
         return 0
     except KeyboardInterrupt:
         return 131

@@ -61,19 +61,18 @@ def search_func(args):
         list. A list of XML extracted from the Solr index or an empty list if no items matched the query.
     """
     searcher = SolrIndexSearcher(SOLR_INDEX, 'ole')
-    print(args)
     if args.field_lookup and args.subfield_lookup:
-        print("need to search by field and subfield")
-        results = searcher.search(args.query_term, field=args.field_lookup, subfield=args.subfield_lookup)
+        results = searcher.search(query=args.query_term, field=args.field_lookup, subfield=args.subfield_lookup, rows=args.num_records)
     elif args.field_label_lookup and args.subfield_label_lookup:
-        results = searcher.search(args.query_term, field_label=args.field_label_lookup, subfield_label=args.subfield_label_lookup)
+        results = searcher.search(query=args.query_term, field_label=args.field_label_lookup, subfield_label=args.subfield_label_lookup, rows=args.num_records)
     elif args.field_lookup:
-        results = searcher.search(args.query_term, field=args.field_lookup)
-        print(results)
+        results = searcher.search(query=args.query_term, field=args.field_lookup, rows=args.num_records)
     elif args.field_label_lookup:
-        results = searcher.search(args.query_term, field_label=args.field_lookup)
+        results = searcher.search(query=args.query_term, field_label=args.field_lookup, rows=args.num_records)
+    elif args.query_term:
+        results = searcher.search(query=args.query_term, rows=args.num_records)
     else:
-        results = searcher.search(args.query_term)
+        result = searcher.search(rows=args.num_records)
     if args.extract_records:
         count = 1
         ole_url_object = urlparse(OLE_INDEX)
@@ -131,7 +130,8 @@ def main():
 
         search.add_argument("-sf", "--subfield_lookup", help="The MARC sub field cod for the specific subfield field that you are searching in", type=str, action=CombineWithProperFieldLookup)
         search.add_argument("-sfl", "--subfield_label_lookup", help="The label for the specific MARC subfield that you are searching in", type=str, action=CombineWithProperFieldLookup)
-        search.add_argument("query_term", help="A string that you want to search the OLE index stemmed for matching results", 
+        search.add_argument("-n", "--num_records", help="The number of records that you want to extact.", default=1000, type=int, action='store')
+        search.add_argument("-q", "--query_term", help="A string that you want to search the OLE index stemmed for matching results",
                              action='store', type=str)
         search.add_argument("--extract_records", action='store_true', default=False, help="Use this flag if you don't actually want to save the records to disk yet")
         parser.add_argument("--version", action='version', version='%(prog)s 1.0')

@@ -23,6 +23,8 @@ OLE_INDEX = environ["OLE_INDEX"]
 SOLR_INDEX = environ["SOLR_INDEX"]
 
 class CombineWithProperFieldLookup(Action):
+    """a custom action class for argparse to raise ArgumentError if field_lookup and field_label_lookup used with wrong subfield lookup
+    """
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
         super(CombineWithProperFieldLookup, self).__init__(option_strings, dest, **kwargs)
 
@@ -32,8 +34,6 @@ class CombineWithProperFieldLookup(Action):
         elif args.field_label_lookup != None and (self.dest == 'subfield_lookup'):
             raise ArgumentError(self, "Cannot be combined with -fl/--field_label_lookup")
         else:
-            print(self.dest)
-            print(args)
             setattr(args, self.dest, values)
 
 def show_lookups(args):
@@ -41,6 +41,9 @@ def show_lookups(args):
 
     The developer should use the MARC field labels in the field_lookup parameter of the searching subparser
     and the appropriate SubField label in the subfield_lookup paramter of the same subparser
+
+    Args:
+        args (ParseResult)
 
     Returns:
         stdout. A pretty-printed string sent to stdout for display in a console.
@@ -50,6 +53,9 @@ def show_lookups(args):
 
 def search_func(args):
     """a function to search the requested Solr index for the query term matching the desired MARC field
+
+    Args:
+        args (ParseResult)
 
     Returns:
         list. A list of XML extracted from the Solr index or an empty list if no items matched the query.
@@ -107,8 +113,10 @@ def main():
       labels necessary to do a field-targetted search
     - searching takes three parameters and returns to stdout the bib numbers of the matching records.
         - query_term is the string that you want to find in the requested MARC field/subfield. Searches include stemming.
-        - field_lookup is the MARC field label from show that the developer wants to target
-        - subfield_lookup is the subfield label from the show that the developer wants to do a target search in
+        - field_label_lookup is the MARC field label from show_lookups that the developer wants to target
+        - subfield_label_lookup is the subfield label from the show_lookups that the developer wants to do a target search in
+        - field_lookup is the MARC field from show_lookups that the developer wants to target
+        - subfield_lookup is the subfield code from the show_lookups that the developer wants to do a target search in
     """
     try:
         parser = ArgumentParser()

@@ -3,7 +3,7 @@
 
 __author__ = "Tyler Danstrom"
 __email__ = "tdanstrom@uchicago.edu"
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 from argparse import ArgumentParser, Action, ArgumentError
 from marcextraction.lookup import MarcFieldLookup

@@ -65,7 +65,6 @@ def search_func(args):
     ole_url = urlparse(OLE_INDEX)
     print(ole_url)
     searcher = SolrIndexSearcher(SOLR_INDEX, 'ole')
-<<<<<<< HEAD
     the_field = MarcField(field=args.field)
     subfields = [x.code for x in the_field.subfields if x.code in args.subfields]
     marc_number = the_field.field
@@ -75,20 +74,6 @@ def search_func(args):
         print(record.get_record())
 
     """
-=======
-    if args.field_lookup and args.subfield_lookup:
-        results = searcher.search(query=args.query_term, field=args.field_lookup, subfield=args.subfield_lookup, rows=args.num_records)
-    elif args.field_label_lookup and args.subfield_label_lookup:
-        results = searcher.search(query=args.query_term, field_label=args.field_label_lookup, subfield_label=args.subfield_label_lookup, rows=args.num_records)
-    elif args.field_lookup:
-        results = searcher.search(query=args.query_term, field=args.field_lookup, rows=args.num_records)
-    elif args.field_label_lookup:
-        results = searcher.search(query=args.query_term, field_label=args.field_lookup, rows=args.num_records)
-    elif args.query_term:
-        results = searcher.search(query=args.query_term, rows=args.num_records)
-    else:
-        result = searcher.search(rows=args.num_records)
->>>>>>> f39a04faec96aee40f1e6e7a65eeb1744cfd4459
     if args.extract_records:
         count = 1
         ole_url_object = urlparse(OLE_INDEX)
@@ -127,17 +112,8 @@ def main():
 
     - show takes no parameters and simply returns a pretty-printed display of the MARC field and subfield
       labels necessary to do a field-targetted search
-<<<<<<< HEAD
     - searching takes up to three parameters and returns to stdout the bib numbers of the matching records or saves the records 
       to your current working directory
-=======
-    - searching takes three parameters and returns to stdout the bib numbers of the matching records.
-        - query_term is the string that you want to find in the requested MARC field/subfield. Searches include stemming.
-        - field_label_lookup is the MARC field label from show_lookups that the developer wants to target
-        - subfield_label_lookup is the subfield label from the show_lookups that the developer wants to do a target search in
-        - field_lookup is the MARC field from show_lookups that the developer wants to target
-        - subfield_lookup is the subfield code from the show_lookups that the developer wants to do a target search in
->>>>>>> f39a04faec96aee40f1e6e7a65eeb1744cfd4459
     """
     try:
         parser = ArgumentParser()
@@ -146,20 +122,9 @@ def main():
         search = subparsers.add_parser('searching')
         show.set_defaults(which='show')
         search.set_defaults(which='searching')
-<<<<<<< HEAD
         search.add_argument("-f", "--field", help="The field number for the MARC21 field that you want to search in. Defaults to 245", action='store', type=str, default='245')
         search.add_argument("-sf", "--subfields", help="The labels for the subfields that you want to search in. Defaults to ['a']", nargs="+", type=str, default=['a'])
         search.add_argument("query_term", help="A string that you want to search the OLE index stemmed for matching results", 
-=======
-        group1 = search.add_mutually_exclusive_group()
-        group1.add_argument("-f", "--field_lookup", help="The specific MARC field that you are searching in", type=int)
-        group1.add_argument("-fl", "--field_label_lookup", help="The label for the specific MARC field that you are searching in", type=str)
-
-        search.add_argument("-sf", "--subfield_lookup", help="The MARC sub field cod for the specific subfield field that you are searching in", type=str, action=CombineWithProperFieldLookup)
-        search.add_argument("-sfl", "--subfield_label_lookup", help="The label for the specific MARC subfield that you are searching in", type=str, action=CombineWithProperFieldLookup)
-        search.add_argument("-n", "--num_records", help="The number of records that you want to extact.", default=1000, type=int, action='store')
-        search.add_argument("-q", "--query_term", help="A string that you want to search the OLE index stemmed for matching results",
->>>>>>> f39a04faec96aee40f1e6e7a65eeb1744cfd4459
                              action='store', type=str)
         search.add_argument("--extract_records", action='store_true', default=False, help="Use this flag if you don't actually want to save the records to disk yet")
         parser.add_argument("--version", action='version', version='%(prog)s 1.0')

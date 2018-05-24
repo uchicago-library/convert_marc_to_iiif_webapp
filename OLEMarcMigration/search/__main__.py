@@ -9,6 +9,7 @@ from argparse import ArgumentParser, Action, ArgumentError
 from marcextraction.lookup import MarcFieldLookup
 from marcextraction.interfaces import SolrIndexSearcher, OLERecordFinder
 from marcextraction.utils import find_ole_bib_numbers
+from marclookup.lookup import MarcField, MarcFieldBrowse
 from os import environ, getcwd
 from os.path import exists, join
 from sys import stdout, stderr
@@ -45,8 +46,9 @@ def show_lookups(args):
     Returns:
         stdout. A pretty-printed string sent to stdout for display in a console.
     """
-    output = MarcFieldLookup.show_valid_lookups(pretty_print=True)
-    stdout.write(output)
+
+    output = MarcFieldBrowse()
+    stdout.write(str(output))
 
 def search_func(args):
     """a function to search the requested Solr index for the query term matching the desired MARC field
@@ -54,20 +56,18 @@ def search_func(args):
     Returns:
         list. A list of XML extracted from the Solr index or an empty list if no items matched the query.
     """
+    ole_url = urlparse(OLE_INDEX)
+    print(ole_url)
     searcher = SolrIndexSearcher(SOLR_INDEX, 'ole')
-    print(args)
-    if args.field_lookup and args.subfield_lookup:
-        print("need to search by field and subfield")
-        results = searcher.search(args.query_term, field=args.field_lookup, subfield=args.subfield_lookup)
-    elif args.field_label_lookup and args.subfield_label_lookup:
-        results = searcher.search(args.query_term, field_label=args.field_label_lookup, subfield_label=args.subfield_label_lookup)
-    elif args.field_lookup:
-        results = searcher.search(args.query_term, field=args.field_lookup)
-        print(results)
-    elif args.field_label_lookup:
-        results = searcher.search(args.query_term, field_label=args.field_lookup)
-    else:
-        results = searcher.search(args.query_term)
+    the_field = MarcField(field=args.field)
+    subfields = [x.code for x in the_field.subfields if x.code in args.subfields]
+    marc_number = the_field.field
+    results = searcher.search(args.query_term, marc_number, args.subfields)
+    for result in results:
+        record = OLERecordFinder(result, ole_url.netloc, ole_url.scheme, ole_url.path)
+        print(record.get_record())
+
+    """
     if args.extract_records:
         count = 1
         ole_url_object = urlparse(OLE_INDEX)
@@ -89,7 +89,7 @@ def search_func(args):
                             stdout.write("record for MARC bib number {} written to {}\n".format(cf_field, fname))
                     stdout.write("{} has MARC records in the OLE SRU\n".format(cf_field))
             else:
-                stderr.write("record {} did not have a bib number in controlfield_0001\n".format(str(count)))
+                stderr.write("record {} did not have a bib number in controlfield_001\n".format(str(count)))
         count += 1
     else:
         count = 1
@@ -97,6 +97,7 @@ def search_func(args):
             stdout.write("Bib number: {}\n".format(n_result.strip()))
             count += 1 
         stdout.write("Total records in search: {}\n".format(count))
+    """
 
 def main():
     """the main function of the console-script.
@@ -105,10 +106,8 @@ def main():
 
     - show takes no parameters and simply returns a pretty-printed display of the MARC field and subfield
       labels necessary to do a field-targetted search
-    - searching takes three parameters and returns to stdout the bib numbers of the matching records.
-        - query_term is the string that you want to find in the requested MARC field/subfield. Searches include stemming.
-        - field_lookup is the MARC field label from show that the developer wants to target
-        - subfield_lookup is the subfield label from the show that the developer wants to do a target search in
+    - searching takes up to three parameters and returns to stdout the bib numbers of the matching records or saves the records 
+      to your current working directory
     """
     try:
         parser = ArgumentParser()
@@ -117,12 +116,8 @@ def main():
         search = subparsers.add_parser('searching')
         show.set_defaults(which='show')
         search.set_defaults(which='searching')
-        group1 = search.add_mutually_exclusive_group()
-        group1.add_argument("-f", "--field_lookup", help="The specific MARC field that you are searching in", type=int)
-        group1.add_argument("-fl", "--field_label_lookup", help="The label for the specific MARC field that you are searching in", type=str)
-
-        search.add_argument("-sf", "--subfield_lookup", help="The MARC sub field cod for the specific subfield field that you are searching in", type=str, action=CombineWithProperFieldLookup)
-        search.add_argument("-sfl", "--subfield_label_lookup", help="The label for the specific MARC subfield that you are searching in", type=str, action=CombineWithProperFieldLookup)
+        search.add_argument("-f", "--field", help="The field number for the MARC21 field that you want to search in. Defaults to 245", action='store', type=str, default='245')
+        search.add_argument("-sf", "--subfields", help="The labels for the subfields that you want to search in. Defaults to ['a']", nargs="+", type=str, default=['a'])
         search.add_argument("query_term", help="A string that you want to search the OLE index stemmed for matching results", 
                              action='store', type=str)
         search.add_argument("--extract_records", action='store_true', default=False, help="Use this flag if you don't actually want to save the records to disk yet")

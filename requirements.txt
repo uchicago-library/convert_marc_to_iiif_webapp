@@ -1,3 +1,4 @@
 
 https://github.com/uchicago-library/marc2iiif/tarball/master#egg=marc2iiif
 https://github.com/uchicago-library/extract_marc_from_vufind/tarball/master#egg=marcExtraction
+https://github.com/uchicago-library/marc_field_lookup/tarball/master#egg=marcFieldsLookup

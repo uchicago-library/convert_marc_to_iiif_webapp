@@ -68,42 +68,35 @@ def search_func(args):
     the_field = MarcField(field=args.field)
     subfields = [x.code for x in the_field.subfields if x.code in args.subfields]
     marc_number = the_field.field
-    results = searcher.search(args.query_term, marc_number, args.subfields)
-    for result in results:
-        record = OLERecordFinder(result, ole_url.netloc, ole_url.scheme, ole_url.path)
-        print(record.get_record())
-
-    """
+    results = searcher.search(args.query_term, marc_number, args.subfields, rows=args.number_of_records)
+    records = []
     if args.extract_records:
-        count = 1
-        ole_url_object = urlparse(OLE_INDEX)
-        for n in results:
-            cf_field = n
-            if cf_field:
-                bib_number = cf_field
-                finder = OLERecordFinder(bib_number, ole_url_object.netloc, ole_url_object.scheme, ole_url_object.path)
-                check, data = finder.get_record()
-                if check:
-                    for n_thing in data:
-                        xml_doc = ElementTree.ElementTree(ElementTree.fromstring(n_thing))
-                        random_id = uuid4().hex
-                        fname = "{}.xml".format(random_id)
-                        if exists(join(getcwd(), fname)):
-                            stderr.write("could not write over existing file {}".format(fname))
-                        else:
-                            xml_doc.write(fname, xml_declaration=True, encoding="UTF-8")
-                            stdout.write("record for MARC bib number {} written to {}\n".format(cf_field, fname))
-                    stdout.write("{} has MARC records in the OLE SRU\n".format(cf_field))
-            else:
-                stderr.write("record {} did not have a bib number in controlfield_001\n".format(str(count)))
-        count += 1
+        for result in results:
+            record = OLERecordFinder(result, ole_url.netloc, ole_url.scheme, ole_url.path)
+            check, records = record.get_record()
+            if check:
+                for record in records:
+                    xml_doc = ElementTree.ElementTree(ElementTree.fromstring(record.decode("utf-8")))
+                    new_filename = join(getcwd(), uuid4().hex+".xml")
+                    xml_doc.write(new_filename, xml_declaration=True)
+                    stdout.write("wrote new record to {}\n".format(new_filename))
+        """
+        for record in records:
+            print(getcwd())
+            print(uuid4().hex)
+            new_filename = join(getcwd(), uuid4().hex+".xml")
+                xml_doc = ElementTree.ElementTree(ElementTree.fromstring(record[1]))
+                if exists(new_filename):
+                    stderr.write("{} already exists on filesystem".format(new_filename))
+                else:
+                    xml_doc.write(new_filename, xml_declaration=True)
+        """
     else:
-        count = 1
-        for n_result in results:
-            stdout.write("Bib number: {}\n".format(n_result.strip()))
-            count += 1 
-        stdout.write("Total records in search: {}\n".format(count))
-    """
+        count = 0
+        for result in  results:
+            stdout.write("found record with bib number {}\n".format(result))
+            count += 1
+        stdout.write("total records: {}\n".format(count))
 
 def main():
     """the main function of the console-script.
@@ -127,7 +120,9 @@ def main():
         search.add_argument("query_term", help="A string that you want to search the OLE index stemmed for matching results", 
                              action='store', type=str)
         search.add_argument("--extract_records", action='store_true', default=False, help="Use this flag if you don't actually want to save the records to disk yet")
+        search.add_argument("-n", "--number_of_records", help="Enter the total number of records that you want to extract. Default is 10.", action='store', type=int, default=10)
         parser.add_argument("--version", action='version', version='%(prog)s 1.0')
+
  
         args = parser.parse_args()
         if args.which == 'show':

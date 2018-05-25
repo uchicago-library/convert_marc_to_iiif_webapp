@@ -6,7 +6,6 @@ __email__ = "tdanstrom@uchicago.edu"
 __version__ = "2.0.0"
 
 from argparse import ArgumentParser, Action, ArgumentError
-from marcextraction.lookup import MarcFieldLookup
 from marcextraction.interfaces import SolrIndexSearcher, OLERecordFinder
 from marcextraction.utils import find_ole_bib_numbers
 from marclookup.lookup import MarcField, MarcFieldBrowse
@@ -63,7 +62,6 @@ def search_func(args):
         list. A list of XML extracted from the Solr index or an empty list if no items matched the query.
     """
     ole_url = urlparse(OLE_INDEX)
-    print(ole_url)
     searcher = SolrIndexSearcher(SOLR_INDEX, 'ole')
     the_field = MarcField(field=args.field)
     subfields = [x.code for x in the_field.subfields if x.code in args.subfields]
@@ -80,17 +78,6 @@ def search_func(args):
                     new_filename = join(getcwd(), uuid4().hex+".xml")
                     xml_doc.write(new_filename, xml_declaration=True)
                     stdout.write("wrote new record to {}\n".format(new_filename))
-        """
-        for record in records:
-            print(getcwd())
-            print(uuid4().hex)
-            new_filename = join(getcwd(), uuid4().hex+".xml")
-                xml_doc = ElementTree.ElementTree(ElementTree.fromstring(record[1]))
-                if exists(new_filename):
-                    stderr.write("{} already exists on filesystem".format(new_filename))
-                else:
-                    xml_doc.write(new_filename, xml_declaration=True)
-        """
     else:
         count = 0
         for result in  results:
@@ -117,13 +104,11 @@ def main():
         search.set_defaults(which='searching')
         search.add_argument("-f", "--field", help="The field number for the MARC21 field that you want to search in. Defaults to 245", action='store', type=str, default='245')
         search.add_argument("-sf", "--subfields", help="The labels for the subfields that you want to search in. Defaults to ['a']", nargs="+", type=str, default=['a'])
-        search.add_argument("query_term", help="A string that you want to search the OLE index stemmed for matching results", 
-                             action='store', type=str)
+        search.add_argument("-q", "--query_term", help="A string that you want to search the OLE index stemmed for matching results Default is wildcard.",
+                             action='store', type=str, default='*')
         search.add_argument("--extract_records", action='store_true', default=False, help="Use this flag if you don't actually want to save the records to disk yet")
         search.add_argument("-n", "--number_of_records", help="Enter the total number of records that you want to extract. Default is 10.", action='store', type=int, default=10)
         parser.add_argument("--version", action='version', version='%(prog)s 1.0')
-
- 
         args = parser.parse_args()
         if args.which == 'show':
             show_lookups(args)

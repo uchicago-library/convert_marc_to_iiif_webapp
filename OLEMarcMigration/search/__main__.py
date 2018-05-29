@@ -59,14 +59,14 @@ def search_func(args):
         args (ParseResult)
 
     Returns:
-        list. A list of XML extracted from the Solr index or an empty list if no items matched the query.
+        stdout. A list of bib numbers printed to stdout with total number of records found or a list of new XML file names
     """
     ole_url = urlparse(OLE_INDEX)
     searcher = SolrIndexSearcher(SOLR_INDEX, 'ole')
     the_field = MarcField(field=args.field)
     subfields = [x.code for x in the_field.subfields if x.code in args.subfields]
     marc_number = the_field.field
-    results = searcher.search(args.query_term, marc_number, args.subfields, rows=args.number_of_records)
+    results = searcher.search(args.query_term, marc_number, args.subfields, rows=args.number_of_records, phrase_search=args.phrase_search)
     records = []
     if args.extract_records:
         for result in results:
@@ -107,6 +107,7 @@ def main():
         search.add_argument("-q", "--query_term", help="A string that you want to search the OLE index stemmed for matching results Default is wildcard.",
                              action='store', type=str, default='*')
         search.add_argument("--extract_records", action='store_true', default=False, help="Use this flag if you don't actually want to save the records to disk yet")
+        search.add_argument("--phrase_search", action="store_true", default=False, help="Use this flag to indicate whether to do a phrase search. Default is false")
         search.add_argument("-n", "--number_of_records", help="Enter the total number of records that you want to extract. Default is 10.", action='store', type=int, default=10)
         parser.add_argument("--version", action='version', version='%(prog)s 1.0')
         args = parser.parse_args()
